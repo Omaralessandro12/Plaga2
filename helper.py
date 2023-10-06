@@ -162,10 +162,31 @@ def play_webcam(conf, model):
 
     webrtc_streamer(
         key="example",
-        video_processor_factory=lambda: MyVideoTransformer(conf, model),
-        rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+        mode = WebRtcMode.SENDRECV,
+        video_processor_factory=lambda : utils.MyVideoTransformer(conf,model),
+        rtc_configuration={"iceServers": get_ice_servers()},
         media_stream_constraints={"video": True, "audio": False},
+        async_processing =True
     )
+    turn.py
+
+    import logging
+
+    import os
+
+    import streamlit as st
+
+    from twilio.base.exceptions import TwilioRestException
+
+    from twilio.rest import Client
+
+    logger = logging.getLogger(__name__)
+
+    os.environ["TWILIO_ACCOUNT_SID"] = "Twilio Account SID"
+
+    os.environ["TWILIO_AUTH_TOKEN"] = "Twilio Auth"
+    #--------------------------------------------------
+def get_ice_servers():
 
 class MyVideoTransformer(VideoTransformerBase):
     def __init__(self, conf, model):
@@ -176,6 +197,7 @@ class MyVideoTransformer(VideoTransformerBase):
         image = frame.to_ndarray(format="bgr24")
         processed_image = self._display_detected_frames(image)
         st.image(processed_image, caption='Detected Video', channels="BGR", use_column_width=True)
+        return av.VideoFrame.from_ndarray(processed_image, format="bgr24")
 
     def _display_detected_frames(self, image):
         orig_h, orig_w = image.shape[0:2]
